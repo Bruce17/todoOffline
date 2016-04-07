@@ -1,0 +1,26 @@
+{
+  "name": "todomvc",
+  "version": "0.0.1",
+  "description": "An offline (service workers) Node and Backbone Todo List Application)",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:TomVance/todoOffline.git"
+  },
+  "author": "Tom Vance",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/TomVance/todoOffline/issues"
+  },
+  "homepage": "https://github.com/TomVance/todoOffline",
+  "dependencies": {
+    "body-parser": "^1.15.0",
+    "express": "^4.13.4",
+    "jade": "^1.11.0",
+    "mongoose": "^4.4.11"
+  }
+}
