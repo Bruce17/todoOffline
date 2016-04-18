@@ -27,3 +27,14 @@ $(document).ready(function(){
     });
 
 });
+
+if('serviceWorker' in navigator){
+  console.log('Registration In Progress');
+  navigator.serviceWorker.register('../sw.js').then(function(){
+    console.log('Registration Complete');
+  }, function(){
+    console.log('Registration Failed');
+  });
+}else{
+  console.log('Service Worker Not Supported');
+}

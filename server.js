@@ -67,10 +67,11 @@ db.once('open', function() {
 
 });
 
+/*************** STATIC FILES FOR SERVICE WORKER ************/
+
+app.get('/public/:path',function(req,res){
+  res.sendFile(__dirname+'/public/'+req.params.path);
+});
 
 
-
-
-
-
-app.listen(3000)
+app.listen(8080);
