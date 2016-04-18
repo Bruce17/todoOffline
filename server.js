@@ -69,8 +69,12 @@ db.once('open', function() {
 
 /*************** STATIC FILES FOR SERVICE WORKER ************/
 
-app.get('/public/:path',function(req,res){
-  res.sendFile(__dirname+'/public/'+req.params.path);
+app.get('/public/_js/app.js',function(req,res){
+  res.sendFile(__dirname+'/public/_js/app.js');
+});
+
+app.get('sw.js',function(req,res){
+  res.sendFile(__dirname+'sw.js');
 });
 
 
