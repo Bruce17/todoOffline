@@ -1,26 +1,48 @@
 {
   "name": "todomvc",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "An offline (service workers) Node and Backbone Todo List Application)",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "lint": "eslint source/",
+    "test": "node_modules/.bin/mocha -R spec ",
+    "test-watch": "node_modules/.bin/mocha -R progress --watch",
+    "test-cov": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover ./node_modules/mocha/bin/_mocha  -- -u exports",
+    "test-travis": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -u exports",
+    "coveralls": "node ./node_modules/.bin/coveralls < ./coverage/lcov.info"
+  },
+  "engines": {
+    "node": "^6.5.0"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:TomVance/todoOffline.git"
+    "url": "git@github.com:Bruce17/todoOffline.git"
   },
   "author": "Tom Vance",
+  "contributors": [
+    {
+      "name": "Michael Raith",
+      "email": "Bruce17@users.noreply.github.com",
+      "url": "https://github.com/Bruce17"
+    }
+  ],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TomVance/todoOffline/issues"
+    "url": "https://github.com/Bruce17/todoOffline/issues"
   },
-  "homepage": "https://github.com/TomVance/todoOffline",
+  "homepage": "https://github.com/Bruce17/todoOffline",
   "dependencies": {
     "body-parser": "^1.15.0",
+    "chai": "^3.5.0",
+    "coveralls": "^2.11.12",
+    "eslint": "^3.4.0",
     "express": "^4.13.4",
-    "jade": "^1.11.0",
-    "mongoose": "^4.4.11"
+    "istanbul-harmony": "^0.3.16",
+    "mocha": "^3.0.2",
+    "mongoose": "^4.4.11",
+    "should": "^11.1.0",
+    "sinon": "^1.17.5",
+    "sinon-chai": "^2.8.0"
   }
 }
