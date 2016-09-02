@@ -16,9 +16,9 @@ script:
   - npm run-script lint
 
   # run tests
-  - npm run-script test-travis
+  #- npm run-script test-travis
 
 # trigger some additional tools after success
-after_success:
-  # send coverage data to coveralls
-  - npm run-script coveralls
+# after_success:
+#   # send coverage data to coveralls
+#   - npm run-script coveralls
