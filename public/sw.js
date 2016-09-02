@@ -8,25 +8,33 @@
 
 var version = 'v1::';
 
-self.addEventListener("install",function(event){
-  ////console.log("Worker: Install In Progress");
+/**
+ * An array of all the files we wish to sync offline.
+ * 
+ * @type {Array}
+ */
+var cacheFiles = [
+  'js/jquery-3.1.0.min.js',
+  'js/offline.min.js',
+  'js/app.js'
+];
+
+self.addEventListener("install", function(event) {
+  //console.log("Worker: Install In Progress");
 
   event.waitUntil(
     caches.open(version + 'core')
-          .then(function(cache){
-            return cache.addAll([
-              // An array of all the files we wish to sync offline.
-              'public/_js/app.js'
-            ]);
-          })
-          .then(function(){
-            //console.log("Worker: Install Complete");
-          })
+      .then(function(cache) {
+        return cache.addAll(cacheFiles);
+      })
+      .then(function() {
+        //console.log("Worker: Install Complete");
+      })
   );
 });
 
 
-self.addEventListener("fetch",function(event){
+self.addEventListener("fetch", function(event) {
   //console.log("Worker: Fetch in progress");
 
   if(event.request.method !== 'GET'){
@@ -38,11 +46,9 @@ self.addEventListener("fetch",function(event){
     return;
   }
 
-
-
   event.respondWith(
     // find a match for the requested URL (pages etc..)
-    caches.match(event.request).then(function(cached){
+    caches.match(event.request).then(function(cached) {
       /*
         Attempt to get the file from the network if it fails then we will return
         the cached versrion.
@@ -54,40 +60,39 @@ self.addEventListener("fetch",function(event){
       //console.log('WORKER: fetch event', cached ? '(cached)' : '(network)', event.request.url);
       return cached || networked;
 
-      function fetchedFromNetwork(response){
-      /*
-        We attempt to store the file into the cache for later use.
-      */
+      function fetchedFromNetwork(response) {
+        /*
+          We attempt to store the file into the cache for later use.
+        */
         var cachedCopy = response.clone();
 
         //console.log("Worker: fetched from network: "+event.request.url);
 
         caches.open(version + 'pages')
-              .then(function add(cache){
-                cache.put(event.request,cachedCopy)
-              })
-              .then(function(){
-                //console.log('Worker: fetch response stored in cache.', event.request.url);
-              });
+          .then(function add(cache) {
+            cache.put(event.request,cachedCopy)
+          })
+          .then(function() {
+            //console.log('Worker: fetch response stored in cache.', event.request.url);
+          });
 
-          return response;
+        return response;
       }
 
-      function unableToResolve(){
+      function unableToResolve() {
 
         //console.log('WORKER: fetch request failed in both cache and network.');
 
         return new Response('<h1>Service Unavailable</h1>', {
-            status: 503,
-            statusText: 'Service Unavailable',
-            headers: new Headers({
-              'Content-Type': 'text/html'
-            })
-          });
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: new Headers({
+            'Content-Type': 'text/html'
+          })
+        });
       }
-
     })
-  )
+  );
 });
 
 self.addEventListener("activate", function(event) {

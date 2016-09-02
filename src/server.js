@@ -98,16 +98,6 @@ db.once('open', function() {
   });
 });
 
-/*************** STATIC FILES FOR SERVICE WORKER ************/
-
-app.get('/public/_js/app.js', function(req, res) {
-  res.sendFile(path.resolve('public/_js/app.js'));
-});
-
-app.get('sw.js', function(req, res) {
-  res.sendFile(path.resolve('public/sw.js'));
-});
-
 
 // Start webservice
 app.listen(port, host, function() {
