@@ -1,20 +1,31 @@
 'use strict';
 
-var express = require('express'),
-    app = express(),
-    mongoose = require('mongoose'),
-    bodyParser = require('body-parser');
+/*** Express dependencies ***/
+const express = require('express');
+const app = express();
+const bodyParser = require('body-parser');
+
+/*** DB dependencies ***/
+const mongoose = require('mongoose');
+
+/*** Other dependencies ***/
+const path = require('path');
 
 
 app.use(express.static('public'));
-app.set('view engine','jade');
-
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 app.use(bodyParser.json());
 
 
+const host = process.env.HOST || process.env.IP || 'localhost';
+const port = process.env.PORT || 8080;
+
+
 /*************** DATABASE ************/
-mongoose.connect('mongodb://api:Applemac1@ds019480.mlab.com:19480/todooffline');
+//TODO: read from config
+mongoose.connect(`mongodb://${host}:27017/todooffline`);
 var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
@@ -30,54 +41,75 @@ db.once('open', function() {
 
   /*************** MODELS ************/
 
-  var Todo = mongoose.model('Todo',TodoSchema);
+  var Todo = mongoose.model('Todo', TodoSchema);
 
 
   /*************** API ************/
 
-  app.get('/api/todos',function(req,res){
-    Todo.find(function(err,todos){
+  /**
+   * 
+   * @param {object} res
+   */
+  function returnAllListItems(res) {
+    Todo.find(function(err, todos) {
       res.json(todos);
     });
+  }
+
+  app.get('/api/todos', function(req, res) {
+    returnAllListItems(res);
   });
 
-  app.post('/api/todos/put',function(req,res){
-
+  app.post('/api/todos/put', function(req, res) {
     // Create a new todo and save.
-    var tmpTodo = new Todo({title:req.body.title,description:"",complete:false});
-    tmpTodo.save();
+    var tmpTodo = new Todo({
+      title: req.body.title,
+      description: req.body.description || '',
+      complete: false
+    });
 
-    // Send back all todos for re rendering
-    Todo.find(function(err,todos){
-      res.json(todos);
+    tmpTodo.save(function (err) {
+      // Send back all todos for re rendering
+      returnAllListItems(res);
     });
   });
 
-  app.post('/api/todos/complete',function(req,res){
-    Todo.findOneAndUpdate({_id: req.body.id},{complete:req.body.complete},function(err,doc){
-
+  app.post('/api/todos/complete', function(req, res) {
+    Todo.findOneAndUpdate({_id: req.body.id}, {complete: req.body.complete}, function(err, doc) {
+      //res.json(req.body);
+      
+      // Send back all todos for re rendering
+      returnAllListItems(res);
+    });
+  });
+  
+  app.post('/api/todos/delete', function(req, res) {
+    Todo.remove({_id: req.body.id}, function (err) {
+      // Send back all todos for re rendering
+      returnAllListItems(res);
     });
   });
 
 
   /*************** BASE URL ************/
-  app.get('/',function(req,res){
+  app.get('/', function(req, res) {
     // Send the base file on request
-    res.sendFile(__dirname+'/public/home.html');
+    res.sendFile(path.resolve('public/home.html'));
   });
-
-
 });
 
 /*************** STATIC FILES FOR SERVICE WORKER ************/
 
-app.get('/public/_js/app.js',function(req,res){
-  res.sendFile(__dirname+'/public/_js/app.js');
+app.get('/public/_js/app.js', function(req, res) {
+  res.sendFile(path.resolve('public/_js/app.js'));
 });
 
-app.get('sw.js',function(req,res){
-  res.sendFile(__dirname+'sw.js');
+app.get('sw.js', function(req, res) {
+  res.sendFile(path.resolve('public/sw.js'));
 });
 
 
-app.listen(8080);
+// Start webservice
+app.listen(port, host, function() {
+  console.log(`Server is listening on ${host}:${port}`);
+});

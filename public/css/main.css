@@ -1,0 +1,50 @@
+/**************************************************
+ * Adjust glyphicons
+ */
+.glyphicon.spinning {
+    animation: spin 1s infinite linear;
+    -webkit-animation: spin2 1s infinite linear;
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg); }
+    to { transform: scale(1) rotate(360deg); }
+}
+
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
+.glyphicon-sm {
+    font-size: 0.8em;
+    margin-right: 1ex;
+}
+
+.glyphicon.delete {
+    color: #f00;
+}
+
+
+/**************************************************
+ * Overwrite default checkboxes with glyphicons.
+ */
+.glyphicon:before {
+    visibility: visible;
+}
+.glyphicon.glyphicon-unchecked:checked:before {
+    content: "\e067";
+}
+input[type=checkbox].glyphicon {
+    visibility: hidden;
+    top: -2px;
+}
+
+
+/**************************************************
+ * Adjust application layout
+ */
+.todoDesc {
+    margin-left: 2.9em;
+    font-style: italic;
+}
