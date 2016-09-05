@@ -57,6 +57,10 @@
    */
 
   function updateToDoList(list) {
+    if (!list || list.length === 0) {
+      $('#todoList').append('<div>Empty list</div>')
+    }
+    
     $.each(list, function(index, value) {
       var isCompleted = (value.complete === true);
 
@@ -127,11 +131,48 @@
       };
     });
   }
+  
+  /**
+   * Toggle a checkbox's disabled state. Change also the upper wrapper elmenent's class attribute.
+   * 
+   * @param jQuery    $el
+   * @param {Boolean} [state=false]
+   */
+  function toggleCheckboxDisabledState($el, state) {
+    if (typeof state !== 'boolean') {
+      state = $el.attr('disabled');
+    }
+    
+    $el.attr('disabled', state);
+    $el.parents('.checkbox')[state ? 'addClass' : 'removeClass']('disabled');
+  }
 
 
   /**************************************************
    * Methods to execute CRUD events on the backend.
    */
+  
+  /**
+   * Fetch and display current list elements.
+   * If device is offline, list items will be read from local storage.
+   */
+  function getCurrentList() {
+    toggleLoadingState(true);
+
+    var doneHandler = function(res) {
+      clearTodoList();
+      updateToDoList(res);
+      updateCurrentListToLocalStorage(res);
+      toggleLoadingState(false);
+    };
+      
+    if (isOnline) {
+      $.get('/api/todos', doneHandler, 'json');
+    }
+    else {
+      doneHandler(getCurrentListFromLocalStorage());
+    }
+  }
 
   /**
    * Add new todo-list item.
@@ -149,17 +190,21 @@
         title: $('#todoTitle').val(),
         description: $('#todoDesc').val()
       }, function(res) {
-        clearTodoList();
-        updateToDoList(res);
-        updateCurrentListToLocalStorage(res);
-        toggleLoadingState(false);
+        getCurrentList();
       });
+      
+      // Clear input fields after commit.
+      $('#todoTitle').val('');
+      $('#todoDesc').val('');
     }
     else {
       //TODO: device is offline, store new item in local storage and sync later.
     }
   }
 
+  /**
+   * Toggle checkbox state. During state update, disable checkbox to dissallow multiple triggers.
+   */
   function toggleCompleteState() {
     var $this = $(this);
     var id = $this.attr('data-todoId');
@@ -171,15 +216,15 @@
 
     if (isOnline) {
       toggleLoadingState(true);
+      toggleCheckboxDisabledState($this, true);
 
       $.post('/api/todos/complete', {
         id: id,
         complete: complete
       }, function(res) {
-        clearTodoList();
-        updateToDoList(res);
-        updateCurrentListToLocalStorage(res);
-        toggleLoadingState(false);
+        toggleCheckboxDisabledState($this, false);
+        
+        getCurrentList();
       });
     }
     else {
@@ -207,35 +252,11 @@
       $.post('/api/todos/delete', {
         id: id
       }, function(res) {
-        clearTodoList();
-        updateToDoList(res);
-        updateCurrentListToLocalStorage(res);
-        toggleLoadingState(false);
+        getCurrentList();
       });
     }
     else {
       //TODO: device is offline, store deleted item in local storage and sync later.
-    }
-  }
-  
-  /**
-   * Fetch and display current list elements.
-   * If device is offline, list items will be read from local storage.
-   */
-  function getCurrentList() {
-    toggleLoadingState();
-
-    var doneHandler = function(res) {
-      updateToDoList(res);
-      updateCurrentListToLocalStorage(res);
-      toggleLoadingState(false);
-    };
-      
-    if (isOnline) {
-      $.get('/api/todos', doneHandler, 'json');
-    }
-    else {
-      doneHandler(getCurrentListFromLocalStorage());
     }
   }
 

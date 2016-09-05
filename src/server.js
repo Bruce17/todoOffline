@@ -46,18 +46,10 @@ db.once('open', function() {
 
   /*************** API ************/
 
-  /**
-   * 
-   * @param {object} res
-   */
-  function returnAllListItems(res) {
+  app.get('/api/todos', function(req, res) {
     Todo.find(function(err, todos) {
       res.json(todos);
     });
-  }
-
-  app.get('/api/todos', function(req, res) {
-    returnAllListItems(res);
   });
 
   app.post('/api/todos/put', function(req, res) {
@@ -69,24 +61,20 @@ db.once('open', function() {
     });
 
     tmpTodo.save(function (err) {
-      // Send back all todos for re rendering
-      returnAllListItems(res);
+      res.json(err);
     });
   });
 
   app.post('/api/todos/complete', function(req, res) {
     Todo.findOneAndUpdate({_id: req.body.id}, {complete: req.body.complete}, function(err, doc) {
       //res.json(req.body);
-      
-      // Send back all todos for re rendering
-      returnAllListItems(res);
+      res.json(err);
     });
   });
   
   app.post('/api/todos/delete', function(req, res) {
     Todo.remove({_id: req.body.id}, function (err) {
-      // Send back all todos for re rendering
-      returnAllListItems(res);
+      res.json(err);
     });
   });
 
