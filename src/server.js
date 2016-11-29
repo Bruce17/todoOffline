@@ -1,3 +1,6 @@
+/* eslint-env es6, node */
+/* eslint strict: ["error", "global"] */
+
 'use strict';
 
 /*** Express dependencies ***/
@@ -30,9 +33,9 @@ var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
-
   /*************** SCHEMA ************/
 
+  // eslint-disable-next-line new-cap
   var TodoSchema = mongoose.Schema({
     title: String,
     description: String,
@@ -71,7 +74,7 @@ db.once('open', function() {
       res.json(err);
     });
   });
-  
+
   app.post('/api/todos/delete', function(req, res) {
     Todo.remove({_id: req.body.id}, function (err) {
       res.json(err);

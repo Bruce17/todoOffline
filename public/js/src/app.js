@@ -1,4 +1,4 @@
-/* global window, jQuery, Offline */
+/* global window, jQuery, Offline, Promise */
 
 (function ($, window, undefined) {
   'use strict';
@@ -9,48 +9,48 @@
   Offline.options = {
     // Should we check the connection status immediatly on page load.
     checkOnLoad: true,
-  
+
     // Should we monitor AJAX requests to help decide if we have a connection.
     interceptRequests: true,
-  
+
     // Should we automatically retest periodically when the connection is down (set to false to disable).
     reconnect: {
       // How many seconds should we wait before rechecking.
       initialDelay: 3,
-  
+
       // How long should we wait between retries.
       delay: 30, // (1.5 * last delay, capped at 1 hour)
     },
-  
+
     // Should we store and attempt to remake requests which fail while the connection is down.
     requests: true,
-  
+
     // Should we show a snake game while the connection is down to keep the user entertained?
     // It's not included in the normal build, you should bring in js/snake.js in addition to
     // offline.min.js.
     game: false
   };
-  
+
   /**
    * @type {Boolean}
    */
   var isOnline = Offline.state;
   console.info('[INFO] Application is %s', (isOnline ? 'online' : 'offline'));
-  
+
   Offline.on('up', function () {
     isOnline = true;
     console.info('[INFO] Device is online');
-    
+
     // TODO: if user goes back online, sync latest offline state with the backend.
   });
   Offline.on('down', function () {
     isOnline = false;
     console.info('[INFO] Device is offline');
-  })
-  
+  });
+
   // Check current offline/online state.
   Offline.check();
-  
+
 
   /**************************************************
    * Helper methods
@@ -58,9 +58,9 @@
 
   function updateToDoList(list) {
     if (!list || list.length === 0) {
-      $('#todoList').append('<div>Empty list</div>')
+      $('#todoList').append('<div>Empty list</div>');
     }
-    
+
     $.each(list, function(index, value) {
       var isCompleted = (value.complete === true);
 
@@ -86,7 +86,7 @@
   function updateCurrentListToLocalStorage(list) {
     window.localStorage.setItem('todos', JSON.stringify(list));
   }
-  
+
   function getCurrentListFromLocalStorage() {
     return window.localStorage.getItem('todos') || [];
   }
@@ -110,31 +110,31 @@
 
     $('#todoLoading')[state ? 'show' : 'hide']();
   }
-  
+
   /**
    * Trigger a online/offline check and return a promise object.
-   * 
+   *
    * @returns {Promise}
    */
   function triggerOfflineCheck() {
     return new Promise(function (response, reject) {
-      var xhr = Offline.check()
-      
+      var xhr = Offline.check();
+
       xhr.onload = function () {
         if (xhr.readyState >= 4) {
           response();
         }
       };
-      
+
       xhr.onerror = function () {
         reject();
       };
     });
   }
-  
+
   /**
    * Toggle a checkbox's disabled state. Change also the upper wrapper elmenent's class attribute.
-   * 
+   *
    * @param jQuery    $el
    * @param {Boolean} [state=false]
    */
@@ -142,7 +142,7 @@
     if (typeof state !== 'boolean') {
       state = $el.attr('disabled');
     }
-    
+
     $el.attr('disabled', state);
     $el.parents('.checkbox')[state ? 'addClass' : 'removeClass']('disabled');
   }
@@ -151,7 +151,7 @@
   /**************************************************
    * Methods to execute CRUD events on the backend.
    */
-  
+
   /**
    * Fetch and display current list elements.
    * If device is offline, list items will be read from local storage.
@@ -165,7 +165,7 @@
       updateCurrentListToLocalStorage(res);
       toggleLoadingState(false);
     };
-      
+
     if (isOnline) {
       $.get('/api/todos', doneHandler, 'json');
     }
@@ -185,14 +185,14 @@
 
     if (isOnline) {
       toggleLoadingState(true);
-  
+
       $.post('/api/todos/put', {
         title: $('#todoTitle').val(),
         description: $('#todoDesc').val()
       }, function(res) {
         getCurrentList();
       });
-      
+
       // Clear input fields after commit.
       $('#todoTitle').val('');
       $('#todoDesc').val('');
@@ -206,6 +206,7 @@
    * Toggle checkbox state. During state update, disable checkbox to dissallow multiple triggers.
    */
   function toggleCompleteState() {
+    // eslint-disable-next-line no-invalid-this
     var $this = $(this);
     var id = $this.attr('data-todoId');
     var complete = false;
@@ -223,7 +224,7 @@
         complete: complete
       }, function(res) {
         toggleCheckboxDisabledState($this, false);
-        
+
         getCurrentList();
       });
     }
@@ -240,6 +241,7 @@
     e.preventDefault();
     e.stopPropagation();
 
+    // eslint-disable-next-line no-invalid-this
     var id = $(this).prev().attr('data-todoId');
 
     if (typeof id !== 'string' || id.trim().length === 0) {
@@ -290,17 +292,17 @@
     console.log('Registration In Progress');
 
     window.navigator.serviceWorker
-      .register('../sw.js')
+      .register('./sw.js')
       .then(function(reg) {
         console.log('Registration succeeded. Scope is ' + reg.scope);
-        
-        if(reg.installing) {
+
+        if (reg.installing) {
           console.log('Service worker installing');
         }
-        else if(reg.waiting) {
+        else if (reg.waiting) {
           console.log('Service worker installed');
         }
-        else if(reg.active) {
+        else if (reg.active) {
           console.log('Service worker active');
         }
       }).catch(function(error) {

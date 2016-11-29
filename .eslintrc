@@ -1,6 +1,7 @@
 
 {
   "env": {
+    "browser": true,
     "node": true
   },
   "globals": {
@@ -15,53 +16,58 @@
     "expect": false
   },
   "rules": {
-    "no-bitwise": 2,
-    "camelcase": 2,
+    "no-bitwise": "error",
+    "camelcase": "error",
     "curly": [
-      2,
+      "error",
       "all"
     ],
-    "eqeqeq": 2,
+    "brace-style": [
+      "error", 
+      "stroustrup"
+    ],
+    "eqeqeq": "error",
     "wrap-iife": [
-      2,
+      "error",
       "any"
     ],
     "indent": [
+      "error",
       2,
-      4,
       {
         "SwitchCase": 1
       }
     ],
-    "no-use-before-define": 1,
-    "new-cap": 2,
-    "no-caller": 2,
+    "no-use-before-define": "warn",
+    "new-cap": "error",
+    "no-caller": "error",
     "quotes": [
-      2,
+      "error",
       "single"
     ],
-    "no-undef": 2,
-    "no-unused-vars": 2,
+    "no-undef": "error",
+    "no-unused-vars": "warn",
     "strict": [
-      2,
+      "error",
       "function"
     ],
-    "no-invalid-this": 2,
+    "no-invalid-this": "error",
     "keyword-spacing": [
-      2,
+      "error",
       {}
     ],
-    "space-infix-ops": 2,
+    "space-infix-ops": "error",
     "no-implicit-coercion": [
-      2,
+      "error",
       {
         "string": true
       }
     ],
-    "no-with": 2,
-    "no-multi-str": 2,
-    "no-trailing-spaces": 2,
-    "no-mixed-spaces-and-tabs": 2,
-    "eol-last": 2
+    "no-with": "error",
+    "no-multi-str": "error",
+    "no-trailing-spaces": "error",
+    "no-mixed-spaces-and-tabs": "error",
+    "eol-last": "error",
+    "semi": "error"
   }
 }
