@@ -9,14 +9,14 @@
     "lint": "eslint public/js/src/ src/",
     "test": "node_modules/.bin/mocha -R spec ",
     "test-watch": "node_modules/.bin/mocha -R progress --watch",
-    "test-cov": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover ./node_modules/mocha/bin/_mocha  -- -u exports",
-    "test-travis": "node --harmony node_modules/istanbul-harmony/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -u exports",
+    "test-cov": "node node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha  -- -u exports",
+    "test-travis": "node node_modules/istanbul/lib/cli.js cover ./node_modules/mocha/bin/_mocha --report lcovonly -- -u exports",
     "coveralls": "node ./node_modules/.bin/coveralls < ./coverage/lcov.info",
     "snyk-protect": "snyk protect",
     "prepublish": "npm run snyk-protect"
   },
   "engines": {
-    "node": "^6.5.0"
+    "node": "^6.9.0"
   },
   "repository": {
     "type": "git",
@@ -41,7 +41,7 @@
     "coveralls": "^2.11.12",
     "eslint": "^3.4.0",
     "express": "^4.13.4",
-    "istanbul-harmony": "^0.3.16",
+    "istanbul": "^0.4.5",
     "mocha": "^3.0.2",
     "mongoose": "^4.4.11",
     "should": "^11.1.0",
