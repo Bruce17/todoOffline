@@ -35,9 +35,10 @@
 .glyphicon.glyphicon-unchecked:checked:before {
     content: "\e067";
 }
-input[type=checkbox].glyphicon {
+.checkbox input[type=checkbox].glyphicon {
     visibility: hidden;
-    top: -2px;
+    top: -7px;
+    margin-left: -23px;
 }
 
 
@@ -47,4 +48,22 @@ input[type=checkbox].glyphicon {
 .todoDesc {
     margin-left: 2.9em;
     font-style: italic;
+}
+
+#todoLoading {
+    position: absolute;
+    right: 1em;
+    top: 0.8em;
+}
+
+.todo.checkbox {
+    margin: 0 auto;
+}
+
+#todoList .glyphicon {
+    font-size: 1.4em;
+}
+
+#todoList .glyphicon-sm {
+    margin-right: 0;
 }

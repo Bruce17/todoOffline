@@ -156,26 +156,38 @@
       $('#todoList').append('<div>Empty list</div>');
     }
 
-    $.each(list, function(index, value) {
+    // Put newest elements on top.
+    list.reverse();
+
+    var todoListHtml = '';
+
+    list.forEach(function(value) {
       var isCompleted = (value.complete === true);
 
-      $('#todoList').prepend(
-        '<div class="checkbox todo">' +
-          '<label class="todoTitle">' +
-            '<input type="checkbox" class="todoCheck glyphicon glyphicon-unchecked" data-todoId="' + value._id + '" value="" ' + (isCompleted ? 'checked=checked' : '') + '>' +
-            '<span class="glyphicon glyphicon-trash glyphicon-sm delete"></span>' +
-            (isCompleted ? '<del>' : '') +
-            value.title +
-            (isCompleted ? '</del>' : '') +
-          '</label>' +
-          '<p class="todoDesc">' +
-            (isCompleted ? '<del>' : '') +
-            value.description +
-            (isCompleted ? '</del>' : '') +
-          '</p>' +
-        '</div>'
-        );
+      todoListHtml += '' +
+        '<tr>' +
+          '<td>' +
+            '<div class="checkbox todo">' +
+              '<label class="todoTitle">' +
+                '<input type="checkbox" class="todoCheck glyphicon glyphicon-unchecked" data-todoId="' + value._id + '" value="" ' + (isCompleted ? 'checked=checked' : '') + '>' +
+                (isCompleted ? '<del>' : '') +
+                value.title +
+                (isCompleted ? '</del>' : '') +
+              '</label>' +
+              '<p class="todoDesc">' +
+                (isCompleted ? '<del>' : '') +
+                value.description +
+                (isCompleted ? '</del>' : '') +
+              '</p>' +
+            '</div>' +
+          '</td>' +
+          '<td>' +
+            '<span class="glyphicon glyphicon-trash glyphicon-sm delete" data-todoId="' + value._id + '"></span>' +
+          '</td>' +
+        '</tr>';
     });
+
+    $('#todoList').prepend(todoListHtml);
   }
 
   /**
@@ -215,6 +227,15 @@
     }
 
     $('#todoLoading')[state ? 'show' : 'hide']();
+  }
+
+  /**
+   * Reset a form field's content.
+   *
+   * @param {string|jQuery} el
+   */
+  function resetFormField(el) {
+    $(el).val('').blur();
   }
 
   /**
@@ -351,8 +372,12 @@
     ));
 
     // Clear input fields after commit.
-    $('#todoTitle').val('');
-    $('#todoDesc').val('');
+    resetFormField('#todoTitle');
+    resetFormField('#todoDesc');
+
+    $('html, body').animate({
+      scrollTop: $('#todo-wrapper').offset().top
+    }, 250);
   }
 
   /**
@@ -365,7 +390,7 @@
     e.stopPropagation();
 
     // eslint-disable-next-line no-invalid-this
-    var id = $(this).prev().attr('data-todoId');
+    var id = $(this).attr('data-todoId');
 
     if (typeof id !== 'string' || id.trim().length === 0) {
       throw new Error('Invalid element id!');
