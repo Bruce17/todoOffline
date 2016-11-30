@@ -1,7 +1,80 @@
-/* global window, jQuery, Offline, Promise */
+/* global window, jQuery, Offline, Promise, logMessage:false, debugBoolean:false, logInfo:false */
 
 (function ($, window, undefined) {
   'use strict';
+
+  /**
+   * Prepare a task object for storing backend task (add, delete, complete item)
+   * at the backend. Tasks will be stored in a simple queue in the frontend and
+   * syncronisied if the user is online.
+   */
+  var Task = function (method, url, data) {
+    this.method = method || 'GET';
+    this.url = url;
+    this.data = data || {};
+  };
+
+  /**
+   * Prepare an jQuery ajax object and return it.
+   *
+   * @returns {Promise}
+   */
+  Task.prototype.prepareAjaxObject = function () {
+    var taskContext = this;
+
+    // Return a real javascript promise object.
+    // We don't want this fake jQuery promises here.
+    return new Promise(function (resolve, reject) {
+      $.ajax({
+        method: taskContext.method,
+        url: taskContext.url,
+        data: taskContext.data,
+        dataType: 'json',
+        // Explicitly do not cache this requests.
+        cache: false,
+        // NOTICE: this code is for debugging purposes only.
+        success: function (data) {
+          console.log('ajax ok', arguments);
+        },
+        error: function (err) {
+          console.error('ajax error', err);
+        }
+      })
+        // Resolve or reject a real promise object at this point.
+        .then(resolve, reject);
+    });
+  };
+
+  /**
+   * Prepare a todo list item object.
+   *
+   * @param {string}  title            Title of the list item (required).
+   * @param {string}  description      Optional item description.
+   * @param {boolean} [complete=false] Mark this item as completed.
+   * @param {number}  [id=timestamp]   Item id generated in the backend. If none
+   *                                   exists or item is not syncronized yet,
+   *                                   the frontend will assign a random id to
+   *                                   this item.
+   */
+  var Item = function (title, description, complete, id) {
+    if (!title || title.length <= 0) {
+      throw new Error('Item: Please define a proper item name!');
+    }
+
+    this.title = title;
+    this.description = description || '';
+    this.complete = (typeof complete === 'boolean' ? complete : false);
+    this._id = (typeof id === 'number' ? id : (new Date()).getTime());
+  }
+
+
+  // Do some feature detection first.
+  var hasServiceWorkerSupport = ('serviceWorker' in window.navigator);
+  var hasSyncManagerSupport = ('SyncManager' in window);
+
+  debugBoolean('ServiceWorker support', hasServiceWorkerSupport);
+  debugBoolean('SyncManager support', hasSyncManagerSupport);
+
 
   /**************************************************
    * Configurate library "Offline.js" to react if application goes offline/online.
@@ -23,7 +96,8 @@
     },
 
     // Should we store and attempt to remake requests which fail while the connection is down.
-    requests: true,
+    // => We do this on our own.
+    requests: false,
 
     // Should we show a snake game while the connection is down to keep the user entertained?
     // It's not included in the normal build, you should bring in js/snake.js in addition to
@@ -35,28 +109,28 @@
    * @type {Boolean}
    */
   var isOnline = Offline.state;
-  console.info('[INFO] Application is %s', (isOnline ? 'online' : 'offline'));
-
-  Offline.on('up', function () {
-    isOnline = true;
-    console.info('[INFO] Device is online');
-
-    // TODO: if user goes back online, sync latest offline state with the backend.
-  });
-  Offline.on('down', function () {
-    isOnline = false;
-    console.info('[INFO] Device is offline');
-  });
-
-  // Check current offline/online state.
-  Offline.check();
+  logInfo('Application is', (isOnline ? 'online' : 'offline'), isOnline);
 
 
   /**************************************************
    * Helper methods
    */
 
+  /**
+   * Clear todo list completly.
+   */
+  function clearTodoList() {
+    $('#todoList').html('');
+  }
+
+  /**
+   * Update current todo list and add new items to it.
+   *
+   * @param {Array} list
+   */
   function updateToDoList(list) {
+    clearTodoList();
+
     if (!list || list.length === 0) {
       $('#todoList').append('<div>Empty list</div>');
     }
@@ -83,23 +157,34 @@
     });
   }
 
-  function updateCurrentListToLocalStorage(list) {
-    window.localStorage.setItem('todos', JSON.stringify(list));
-  }
-
-  function getCurrentListFromLocalStorage() {
-    return window.localStorage.getItem('todos') || [];
-  }
-
   /**
-   * Clear todo list completly.
+   * Update a new list to the local storage.
+   *
+   * @param {Array}  list
+   * @param {string} [listName='todos']
    */
-  function clearTodoList() {
-    $('#todoList').html('');
+  function updateListToLocalStorage(list, listName) {
+    listName = listName || 'todos';
+
+    window.localStorage.setItem(listName, JSON.stringify(list));
   }
 
   /**
-   * Toggle loading spinner or set target state directl.y
+   * Get the current todo list from the local storage or an empty array if
+   * none exists yet.
+   *
+   * @param {string} [listName='todos']
+   *
+   * @returns {Array}
+   */
+  function getListFromLocalStorage(listName) {
+    listName = listName || 'todos';
+
+    return JSON.parse(window.localStorage.getItem(listName)) || [];
+  }
+
+  /**
+   * Toggle loading spinner or set target state directly.
    *
    * @param {Boolean} [state=false]
    */
@@ -111,67 +196,57 @@
     $('#todoLoading')[state ? 'show' : 'hide']();
   }
 
-  /**
-   * Trigger a online/offline check and return a promise object.
-   *
-   * @returns {Promise}
-   */
-  function triggerOfflineCheck() {
-    return new Promise(function (response, reject) {
-      var xhr = Offline.check();
+  function processTaskList() {
+    var tasks = getListFromLocalStorage('tasks');
+    var promise = Promise.resolve();
 
-      xhr.onload = function () {
-        if (xhr.readyState >= 4) {
-          response();
-        }
-      };
+    //TODO: edgecase: how to handle currently synchronizing tasks and if the user adds a new tasks concurrently?
+    //TODO: what if during synchronizing the app goes offline again? -> remove every execute tasks one by one after processing.
 
-      xhr.onerror = function () {
-        reject();
-      };
+    tasks.forEach(function (task) {
+      //TODO: create a promise chain of all tasks to execute them in sequence.
     });
   }
 
   /**
-   * Toggle a checkbox's disabled state. Change also the upper wrapper elmenent's class attribute.
+   * Add a new task to the local queue.
    *
-   * @param jQuery    $el
-   * @param {Boolean} [state=false]
+   * @param {Task} task
    */
-  function toggleCheckboxDisabledState($el, state) {
-    if (typeof state !== 'boolean') {
-      state = $el.attr('disabled');
+  function addTaskToQueue(task) {
+    var taskList = getListFromLocalStorage('tasks');
+    taskList.push(task);
+    updateListToLocalStorage(taskList, 'tasks');
+
+    // Start executing local task queue processing.
+    if (isOnline) {
+      processTaskList();
     }
 
-    $el.attr('disabled', state);
-    $el.parents('.checkbox')[state ? 'addClass' : 'removeClass']('disabled');
+    // Else: task list processing will automatically start if user goes back online.
   }
 
 
   /**************************************************
-   * Methods to execute CRUD events on the backend.
+   * Tmethods to manipulate list items.
    */
 
   /**
-   * Fetch and display current list elements.
-   * If device is offline, list items will be read from local storage.
+   * First load current list from local storage.
+   * Then try to load new content from the backend.
+   *
+   * @returns {Array}
    */
   function getCurrentList() {
-    toggleLoadingState(true);
+    // Fetch current list from local storage and update list.
+    var todos = getListFromLocalStorage();
+    updateToDoList(todos);
 
-    var doneHandler = function(res) {
-      clearTodoList();
-      updateToDoList(res);
-      updateCurrentListToLocalStorage(res);
-      toggleLoadingState(false);
-    };
-
-    if (isOnline) {
-      $.get('/api/todos', doneHandler, 'json');
-    }
-    else {
-      doneHandler(getCurrentListFromLocalStorage());
-    }
+    // Get a fresh copy of the todo list from the backend.
+    addTaskToQueue(new Task(
+      'GET',
+      '/api/todos'
+    ));
   }
 
   /**
@@ -183,57 +258,29 @@
     e.preventDefault();
     e.stopPropagation();
 
-    if (isOnline) {
-      toggleLoadingState(true);
+    // Add new item to local list immediately.
+    var todos = getListFromLocalStorage();
+    var newItem = new Item($('#todoTitle').val(), $('#todoDesc').val());
+    todos.push(newItem);
+    updateListToLocalStorage(todos);
 
-      $.post('/api/todos/put', {
-        title: $('#todoTitle').val(),
-        description: $('#todoDesc').val()
-      }, function(res) {
-        getCurrentList();
-      });
+    // Update displayable list.
+    updateToDoList(todos);
 
-      // Clear input fields after commit.
-      $('#todoTitle').val('');
-      $('#todoDesc').val('');
-    }
-    else {
-      //TODO: device is offline, store new item in local storage and sync later.
-    }
+    // Add a new task to sync new data with the backend.
+    addTaskToQueue(new Task(
+      'POST',
+      '/api/todos/put',
+      newItem
+    ));
+
+    // Clear input fields after commit.
+    $('#todoTitle').val('');
+    $('#todoDesc').val('');
   }
 
   /**
-   * Toggle checkbox state. During state update, disable checkbox to dissallow multiple triggers.
-   */
-  function toggleCompleteState() {
-    // eslint-disable-next-line no-invalid-this
-    var $this = $(this);
-    var id = $this.attr('data-todoId');
-    var complete = false;
-
-    if ($this.is(':checked')) {
-      complete = true;
-    }
-
-    if (isOnline) {
-      toggleLoadingState(true);
-      toggleCheckboxDisabledState($this, true);
-
-      $.post('/api/todos/complete', {
-        id: id,
-        complete: complete
-      }, function(res) {
-        toggleCheckboxDisabledState($this, false);
-
-        getCurrentList();
-      });
-    }
-    else {
-      //TODO: device is offline, store altered item in local storage and sync later.
-    }
-  }
-
-  /**
+   * Delete a todo-list item.
    *
    * @param {Event} e
    */
@@ -248,27 +295,78 @@
       throw new Error('Invalid element id!');
     }
 
-    if (isOnline) {
-      toggleLoadingState(true);
+    // Find element to delete.
+    var todos = getListFromLocalStorage();
 
-      $.post('/api/todos/delete', {
+    todos = todos.filter(function (item) {
+      // Some ids might be numbers only. Therefore check against numbers and numbers as strings.
+      // eslint-disable-next-line eqeqeq
+      return (!item || item._id != id);
+    });
+
+    updateListToLocalStorage(todos);
+
+    // Update displayable list.
+    updateToDoList(todos);
+
+    // Add a new task to sync new data with the backend.
+    addTaskToQueue(new Task(
+      //TODO: add proper method type "DELETE"
+      'POST',
+      '/api/todos/delete',
+      {
         id: id
-      }, function(res) {
-        getCurrentList();
-      });
+      }
+    ));
+  }
+
+  /**
+   * Toggle checkbox state. During state update,
+   * disable checkbox to dissallow multiple triggers.
+   */
+  function toggleCompleteState() {
+    // eslint-disable-next-line no-invalid-this
+    var $this = $(this);
+    var id = $this.attr('data-todoId');
+    var complete = false;
+
+    if ($this.is(':checked')) {
+      complete = true;
     }
-    else {
-      //TODO: device is offline, store deleted item in local storage and sync later.
-    }
+
+    // Alter toggle state for current item.
+    var todos = getListFromLocalStorage();
+
+    todos.forEach(function (item) {
+      // Some ids might be numbers only. Therefore check against numbers and numbers as strings.
+      // eslint-disable-next-line eqeqeq
+      if (item && item._id == id) {
+        item.complete = complete;
+      }
+    });
+
+    updateListToLocalStorage(todos);
+
+    // Update displayable list.
+    updateToDoList(todos);
+
+    // Add a new task to sync new data with the backend.
+    addTaskToQueue(new Task(
+      'POST',
+      '/api/todos/complete',
+      {
+        id: id,
+        complete: complete
+      }
+    ));
   }
 
 
   /**************************************************
    * Wait for the site to be ready loaded.
    */
-
-  $(window.document).ready(function() {
-    console.log('Document is ready');
+  $(function() {
+    logMessage('Document is ready');
 
     // Fetch fresh copy off all todo list items.
     getCurrentList();
@@ -284,33 +382,50 @@
   });
 
 
+  Offline.on('up', function () {
+    isOnline = true;
+    logInfo('Device is', 'online', isOnline);
+
+    // If user goes back online, sync latest offline state with the backend.
+    processTaskList();
+  });
+  Offline.on('down', function () {
+    isOnline = false;
+    logInfo('Device is', 'offline', isOnline);
+  });
+
+  // Check current offline/online state.
+  Offline.check();
+
+
   /**************************************************
    * Init service worker if available.
    */
 
-  if ('serviceWorker' in window.navigator) {
-    console.log('Registration In Progress');
+  if (hasServiceWorkerSupport) {
+    logMessage('Registration In Progress');
 
     window.navigator.serviceWorker
-      .register('./sw.js')
+      .register('js/src/sw.js')
       .then(function(reg) {
-        console.log('Registration succeeded. Scope is ' + reg.scope);
+        logMessage('Registration succeeded. Scope is ' + reg.scope);
 
         if (reg.installing) {
-          console.log('Service worker installing');
+          logMessage('Service worker installing');
         }
         else if (reg.waiting) {
-          console.log('Service worker installed');
+          logMessage('Service worker installed');
         }
         else if (reg.active) {
-          console.log('Service worker active');
+          logMessage('Service worker active');
         }
-      }).catch(function(error) {
+      })
+      .catch(function(error) {
         // registration failed
-        console.log('Registration failed with ' + error);
+        logMessage('Registration failed with ' + error);
       });
   }
   else {
-    console.log('Service Worker Not Supported');
+    logMessage('Service Worker Not Supported');
   }
 })(jQuery, window);
