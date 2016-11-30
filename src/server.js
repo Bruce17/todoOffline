@@ -16,6 +16,8 @@ const mongoose = require('mongoose');
 const path = require('path');
 
 /*** Read environment variables ***/
+const isCloud9 = (!!process.env.IP);
+
 const host = process.env.HOST || process.env.IP || 'localhost';
 const port = process.env.PORT || 8080;
 
@@ -103,6 +105,13 @@ db.once('open', function() {
 
 
 // Start webservice
-app.listen(port, host, function() {
-  console.log(`Server is listening on ${host}:${port}`);
-});
+if (isCloud9) {
+  app.listen(port, host, function() {
+    console.log(`Server is listening on "${host}:${port}"`);
+  });
+}
+else {
+  app.listen(port, function() {
+    console.log(`Server is listening on port "${port}"`);
+  });
+}
