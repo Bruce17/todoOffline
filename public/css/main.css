@@ -46,7 +46,7 @@
  * Adjust application layout
  */
 .todoDesc {
-    margin-left: 2.9em;
+    margin-left: 1.4em;
     font-style: italic;
 }
 
@@ -66,4 +66,12 @@
 
 #todoList .glyphicon-sm {
     margin-right: 0;
+}
+
+.panel-default>.panel-heading {
+    background: #ffe0b7;
+    background: -moz-linear-gradient(top, #ffe0b7 0%, #f9b561 100%);
+    background: -webkit-linear-gradient(top, #ffe0b7 0%,#f9b561 100%);
+    background: linear-gradient(to bottom, #ffe0b7 0%,#f9b561 100%);
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffe0b7', endColorstr='#f9b561',GradientType=0 );
 }

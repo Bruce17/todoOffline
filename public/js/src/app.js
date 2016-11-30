@@ -40,14 +40,7 @@
         data: taskContext.data,
         dataType: 'json',
         // Explicitly do not cache this requests.
-        cache: false,
-        // NOTICE: this code is for debugging purposes only.
-        success: function (data) {
-          logMessage('ajax ok', arguments);
-        },
-        error: function (err) {
-          logError('ajax error', err);
-        }
+        cache: false
       })
         // Resolve or reject a real promise object at this point.
         .then(resolve, reject);
