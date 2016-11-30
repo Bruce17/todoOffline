@@ -5,6 +5,7 @@
 
   var fncDebug = console[ ('debug' in console ? 'debug' : 'log') ];
   var fncInfo = console[ ('info' in console ? 'info' : 'log') ];
+  var fncError = console[ ('error' in console ? 'error' : 'log') ];
 
   /**
    * Return color depending on state.
@@ -54,6 +55,20 @@
   };
 
   /**
+   * Log a error message.
+   *
+   * @param {string}       message
+   * @param {Error|string} err
+   */
+  var logError = function logError(message, err) {
+    fncError(
+      '[ERROR] %s: ',
+      message,
+      err
+    );
+  };
+
+  /**
    * Simple message logging.
    *
    * @param {string} message
@@ -62,4 +77,5 @@
 
   window.debugBoolean = debugBoolean;
   window.logInfo = logInfo;
+  window.logError = logError;
 })(window, window.console);

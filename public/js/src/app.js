@@ -1,4 +1,4 @@
-/* global window, jQuery, Offline, Promise, logMessage:false, debugBoolean:false, logInfo:false */
+/* global window, jQuery, Offline, Promise, logMessage:false, debugBoolean:false, logInfo:false, logError:false */
 
 (function ($, window, undefined) {
   'use strict';
@@ -7,11 +7,20 @@
    * Prepare a task object for storing backend task (add, delete, complete item)
    * at the backend. Tasks will be stored in a simple queue in the frontend and
    * syncronisied if the user is online.
+   *
+   * @param {string}        [method='GET'] Method type send to the backend.
+   * @param {string}        url            Trigger this remote ressource.
+   * @param {object|null}   data           Pass this data to the remore ressource.
+   * @param {object}        states         An object containing states to execute
+   *                                       after processing this task.
    */
-  var Task = function (method, url, data) {
+  var Task = function (method, url, data, states) {
     this.method = method || 'GET';
     this.url = url;
     this.data = data || {};
+    this.states = states || {};
+
+    this._id = (new Date()).getTime();
   };
 
   /**
@@ -19,7 +28,7 @@
    *
    * @returns {Promise}
    */
-  Task.prototype.prepareAjaxObject = function () {
+  Task.prototype.prepareAjaxRequest = function () {
     var taskContext = this;
 
     // Return a real javascript promise object.
@@ -34,15 +43,30 @@
         cache: false,
         // NOTICE: this code is for debugging purposes only.
         success: function (data) {
-          console.log('ajax ok', arguments);
+          logMessage('ajax ok', arguments);
         },
         error: function (err) {
-          console.error('ajax error', err);
+          logError('ajax error', err);
         }
       })
         // Resolve or reject a real promise object at this point.
         .then(resolve, reject);
     });
+  };
+
+  /**
+   * Factory method to create a task object from a given set of data.
+   *
+   * @returns {Task}
+   */
+  Task.fromObject = function (obj) {
+    var task = new Task(obj.method, obj.url, obj.data, obj.states);
+
+    if (obj._id) {
+      task._id = obj._id;
+    }
+
+    return task;
   };
 
   /**
@@ -70,10 +94,7 @@
 
   // Do some feature detection first.
   var hasServiceWorkerSupport = ('serviceWorker' in window.navigator);
-  var hasSyncManagerSupport = ('SyncManager' in window);
-
   debugBoolean('ServiceWorker support', hasServiceWorkerSupport);
-  debugBoolean('SyncManager support', hasSyncManagerSupport);
 
 
   /**************************************************
@@ -196,15 +217,68 @@
     $('#todoLoading')[state ? 'show' : 'hide']();
   }
 
+  /**
+   * Remove a processed task from the queue.
+   *
+   * @param {Task} task
+   */
+  function removeTaskFromQueue(task) {
+    var tasks = getListFromLocalStorage('tasks');
+
+    tasks = tasks.filter(function(item) {
+      // Some ids might be numbers only. Therefore check against numbers and numbers as strings.
+      // eslint-disable-next-line eqeqeq
+      return (!item || item._id != task._id);
+    });
+
+    updateListToLocalStorage(tasks, 'tasks');
+  }
+
+  /**
+   * Process and execute every tasks in the queue.
+   */
   function processTaskList() {
     var tasks = getListFromLocalStorage('tasks');
     var promise = Promise.resolve();
 
-    //TODO: edgecase: how to handle currently synchronizing tasks and if the user adds a new tasks concurrently?
-    //TODO: what if during synchronizing the app goes offline again? -> remove every execute tasks one by one after processing.
+    toggleLoadingState(true);
 
+    /*
+     * Iterate over all tasks and create a promise chain. All ajax requests will
+     * be executed after another. Every finished tasks will be deleted immediately.
+     */
     tasks.forEach(function (task) {
-      //TODO: create a promise chain of all tasks to execute them in sequence.
+      // This line creates the promise chain.
+      promise = promise.then((function (innerTask) {
+        return function () {
+          // Prepare and trigger ajax request.
+          return innerTask.prepareAjaxRequest()
+            // Ajax request was successful.
+            .then(function (data) {
+              // Remove process task from queue.
+              removeTaskFromQueue(innerTask);
+
+              // Process some task states after successful exection.
+              if (innerTask.states) {
+                // Update todo list in the local storage and display new list content.
+                if (innerTask.states.updateList) {
+                  updateListToLocalStorage(data);
+                  updateToDoList(data);
+                }
+              }
+            })
+            // There was an error during executing the ajax request.
+            .catch(function () {
+              //TODO: handle error if user is gone offline.
+              logError(arguments);
+            });
+        };
+      })(Task.fromObject(task)));
+    });
+
+    // Disable loading spinner after all commands are execeuted.
+    promise.then(function () {
+      toggleLoadingState(false);
     });
   }
 
@@ -245,7 +319,9 @@
     // Get a fresh copy of the todo list from the backend.
     addTaskToQueue(new Task(
       'GET',
-      '/api/todos'
+      '/api/todos',
+      null,
+      {updateList: true}
     ));
   }
 
@@ -379,6 +455,9 @@
 
     // Remove item completly.
     $('body').on('click', '.delete', deleteItem);
+
+    // Refresh list automatically every ten minutes.
+    setTimeout(getCurrentList, 10 * 60 * 1000);
   });
 
 
