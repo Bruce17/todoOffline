@@ -16,7 +16,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 
 /*** Read environment variables ***/
-const isCloud9 = (!!process.env.IP);
+const isCloud9 = (typeof process.env.IP !== 'undefined');
 
 const host = process.env.HOST || process.env.IP || 'localhost';
 const port = process.env.PORT || 8080;
