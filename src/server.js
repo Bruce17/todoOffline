@@ -7,6 +7,7 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const basicAuth = require('basic-auth-connect');
 
 /*** DB dependencies ***/
 const mongoose = require('mongoose');
@@ -14,6 +15,21 @@ const mongoose = require('mongoose');
 /*** Other dependencies ***/
 const path = require('path');
 
+/*** Read environment variables ***/
+const host = process.env.HOST || process.env.IP || 'localhost';
+const port = process.env.PORT || 8080;
+
+const hasBasicAuth = (process.env.BASIC_AUTH === 'true');
+const basicAuthUsername = process.env.BASIC_AUTH_USER;
+const basicAuthPassword = process.env.BASIC_AUTH_PASS;
+
+const mongodbUrl = process.env.MONGODB_URI || `mongodb://${host}:27017/todooffline`;
+
+
+// Enable basic auth protection.
+if (hasBasicAuth) {
+  app.use(basicAuth(basicAuthUsername, basicAuthPassword));
+}
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({
@@ -22,13 +38,9 @@ app.use(bodyParser.urlencoded({
 app.use(bodyParser.json());
 
 
-const host = process.env.HOST || process.env.IP || 'localhost';
-const port = process.env.PORT || 8080;
-
-
 /*************** DATABASE ************/
 //TODO: read from config
-mongoose.connect(`mongodb://${host}:27017/todooffline`);
+mongoose.connect(mongodbUrl);
 var db = mongoose.connection;
 
 db.on('error', console.error.bind(console, 'connection error:'));

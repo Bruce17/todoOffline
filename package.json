@@ -36,6 +36,7 @@
   },
   "homepage": "https://github.com/Bruce17/todoOffline",
   "dependencies": {
+    "basic-auth-connect": "^1.0.0",
     "body-parser": "^1.15.0",
     "chai": "^3.5.0",
     "coveralls": "^2.11.12",
