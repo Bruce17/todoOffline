@@ -65,7 +65,7 @@
     this.description = description || '';
     this.complete = (typeof complete === 'boolean' ? complete : false);
     this._id = (typeof id === 'number' ? id : (new Date()).getTime());
-  }
+  };
 
 
   // Do some feature detection first.
