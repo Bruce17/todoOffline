@@ -503,7 +503,7 @@
     logMessage('Registration In Progress');
 
     window.navigator.serviceWorker
-      .register('js/src/sw.js')
+      .register('./sw.js')
       .then(function(reg) {
         logMessage('Registration succeeded. Scope is ' + reg.scope);
 

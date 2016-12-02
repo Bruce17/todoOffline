@@ -16,17 +16,17 @@
    * @type {Array}
    */
   var cacheFiles = [
-    '../../css/main.css',
-    '../../css/lib/offline-theme-chrome.css',
-    '../../css/lib/offline-language-german.css',
-    '../lib/jquery-3.1.0.min.js',
-    '../lib/offline.min.js',
-    'app.js',
-    'debug.js'
+    'css/main.css',
+    'css/lib/offline-theme-chrome.css',
+    'css/lib/offline-language-german.css',
+    'js/lib/jquery-3.1.0.min.js',
+    'js/lib/offline.min.js',
+    'js/src/app.js',
+    'js/src/debug.js'
   ];
 
   self.addEventListener('install', function(event) {
-    console.log('Worker: Install In Progress');
+    //console.log('Worker: Install In Progress');
 
     event.waitUntil(
       caches.open(version + 'core')
@@ -34,32 +34,32 @@
           return cache.addAll(cacheFiles);
         })
         .then(function() {
-          console.log('Worker: Install Complete');
+          //console.log('Worker: Install Complete');
           self.skipWaiting();
         })
     );
   });
 
   self.addEventListener('fetch', function(event) {
-    console.log('Worker: Fetch in progress');
+    //console.log('Worker: Fetch in progress');
 
     if (event.request.method !== 'GET') {
       // We only want to deal with GET requests, other methods should die gracefully in our main code.
-      console.log('Worker: Method Rejected');
+      //console.log('Worker: Method Rejected');
       return;
     }
 
     function fetchedFromNetwork(response) {
       // We attempt to store the file into the cache for later use.
       var cachedCopy = response.clone();
-      console.log('Worker: fetched from network: ' + event.request.url);
+      //console.log('Worker: fetched from network: ' + event.request.url);
 
       caches.open(version + 'pages')
         .then(function add(cache) {
           cache.put(event.request,cachedCopy);
         })
         .then(function() {
-          console.log('Worker: fetch response stored in cache.', event.request.url);
+          //console.log('Worker: fetch response stored in cache.', event.request.url);
         });
 
       return response;
@@ -88,7 +88,7 @@
                         .then(fetchedFromNetwork, unableToResolve)
                         .catch(unableToResolve);
 
-        console.log('WORKER: fetch event', cached ? '(cached)' : '(network)', event.request.url);
+        //console.log('WORKER: fetch event', cached ? '(cached)' : '(network)', event.request.url);
         return cached || networked;
       })
     );
@@ -99,7 +99,7 @@
      * Just like with the install event, event.waitUntil blocks activate on a
      * promise. Activation will fail unless the promise is fulfilled.
      */
-    console.log('Worker: activate event in progress.');
+    //console.log('Worker: activate event in progress.');
 
     event.waitUntil(
       caches
@@ -123,17 +123,8 @@
           );
         })
         .then(function() {
-          console.log('Worker: activate completed.');
+          //console.log('Worker: activate completed.');
         })
     );
-  });
-
-  self.addEventListener('sync', function(event) {
-    console.log('Start syncing ...');
-
-    if (event.tag === 'syncTest') {
-      //event.waitUntil(fncFooBar());
-      console.log('... execute "syncTest"');
-    }
   });
 })();
