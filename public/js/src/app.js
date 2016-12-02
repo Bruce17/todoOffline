@@ -473,6 +473,9 @@
     // Remove item completly.
     $('body').on('click', '.delete', deleteItem);
 
+    // Update list manually.
+    $('#todoUpdate').on('click', getCurrentList);
+
     // Refresh list automatically every minute.
     setTimeout(getCurrentList, 60 * 1000);
   });

@@ -52,8 +52,15 @@
 
 #todoLoading {
     position: absolute;
+    right: 3em;
+    top: 0.8em;
+}
+#todoUpdate {
+    position: absolute;
     right: 1em;
     top: 0.8em;
+    
+    cursor: pointer;
 }
 
 .todo.checkbox {
