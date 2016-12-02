@@ -1,7 +1,7 @@
 {
-  "name": "todomvc",
+  "name": "todo-offline-app",
   "version": "1.0.0",
-  "description": "An offline (service workers) Node and Backbone Todo List Application)",
+  "description": "An offline todo list application using Node.js and service workers.",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
