@@ -359,7 +359,7 @@
 
     // Add a new task to sync new data with the backend.
     addTaskToQueue(new Task(
-      'POST',
+      'PUT',
       '/api/todos/put',
       newItem
     ));
@@ -405,8 +405,7 @@
 
     // Add a new task to sync new data with the backend.
     addTaskToQueue(new Task(
-      //TODO: add proper method type "DELETE"
-      'POST',
+      'DELETE',
       '/api/todos/delete',
       {
         id: id

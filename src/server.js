@@ -28,10 +28,8 @@ const basicAuthPassword = process.env.BASIC_AUTH_PASS;
 const mongodbUrl = process.env.MONGODB_URI || `mongodb://${host}:27017/todooffline`;
 
 
-// Enable basic auth protection.
-if (hasBasicAuth) {
-  app.use(basicAuth(basicAuthUsername, basicAuthPassword));
-}
+// Prepare basic auth protection.
+const basicAuthMiddleware = basicAuth(basicAuthUsername, basicAuthPassword);
 
 app.use(express.static('public'));
 app.use(bodyParser.urlencoded({
@@ -62,14 +60,16 @@ db.once('open', function() {
 
 
   /*************** API ************/
+  // eslint-disable-next-line new-cap
+  const apiRouter = express.Router();
 
-  app.get('/api/todos', function(req, res) {
+  apiRouter.get('/todos', function(req, res) {
     Todo.find(function(err, todos) {
       res.json(todos);
     });
   });
 
-  app.post('/api/todos/put', function(req, res) {
+  apiRouter.put('/todos/put', function(req, res) {
     // Create a new todo and save.
     var tmpTodo = new Todo({
       title: req.body.title,
@@ -82,25 +82,41 @@ db.once('open', function() {
     });
   });
 
-  app.post('/api/todos/complete', function(req, res) {
+  apiRouter.post('/todos/complete', function(req, res) {
     Todo.findOneAndUpdate({_id: req.body.id}, {complete: req.body.complete}, function(err, doc) {
       //res.json(req.body);
       res.json(err);
     });
   });
 
-  app.post('/api/todos/delete', function(req, res) {
+  apiRouter.delete('/todos/delete', function(req, res) {
     Todo.remove({_id: req.body.id}, function (err) {
       res.json(err);
     });
   });
 
+  // Enable basic auth protection.
+  if (hasBasicAuth) {
+    app.use('/api', basicAuthMiddleware, apiRouter);
+  }
+  else {
+    app.use('/api', apiRouter);
+  }
+
 
   /*************** BASE URL ************/
-  app.get('/', function(req, res) {
+  const indexFileHandler = function(req, res) {
     // Send the base file on request
     res.sendFile(path.resolve('public/home.html'));
-  });
+  };
+
+  // Enable basic auth protection.
+  if (hasBasicAuth) {
+    app.use('/', basicAuthMiddleware, indexFileHandler);
+  }
+  else {
+    app.use('/', indexFileHandler);
+  }
 });
 
 

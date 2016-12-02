@@ -56,7 +56,9 @@
 
       caches.open(version + 'pages')
         .then(function add(cache) {
-          cache.put(event.request,cachedCopy);
+          if (event.request.url.indexOf('chrome-extension://') === -1) {
+            cache.put(event.request,cachedCopy);
+          }
         })
         .then(function() {
           //console.log('Worker: fetch response stored in cache.', event.request.url);
