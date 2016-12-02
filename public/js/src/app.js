@@ -473,8 +473,8 @@
     // Remove item completly.
     $('body').on('click', '.delete', deleteItem);
 
-    // Refresh list automatically every ten minutes.
-    setTimeout(getCurrentList, 10 * 60 * 1000);
+    // Refresh list automatically every minute.
+    setTimeout(getCurrentList, 60 * 1000);
   });
 
 
