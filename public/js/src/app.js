@@ -477,7 +477,7 @@
     $('#todoUpdate').on('click', getCurrentList);
 
     // Refresh list automatically every minute.
-    setTimeout(getCurrentList, 60 * 1000);
+    setInterval(getCurrentList, 60 * 1000);
   });
 
 
