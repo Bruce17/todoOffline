@@ -8,7 +8,7 @@
 (function (undefined) {
   'use strict';
 
-  var version = 'v1::';
+  var version = 'v2::';
 
   /**
    * An array of all the files we wish to sync offline.
