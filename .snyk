@@ -1,5 +1,5 @@
 # Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
-version: v1.7.0
+version: v1.7.1
 ignore: {}
 # patches apply the minimum changes required to fix a vulnerability
 patch:
@@ -13,3 +13,6 @@ patch:
         patched: '2017-05-23T00:03:05.538Z'
     - mongoose > mquery > debug > ms:
         patched: '2017-05-23T00:03:05.538Z'
+  'npm:debug:20170905':
+    - mocha > debug:
+        patched: '2017-10-03T00:03:07.789Z'
