@@ -48,7 +48,7 @@
     "should": "^11.1.0",
     "sinon": "^1.17.5",
     "sinon-chai": "^2.8.0",
-    "snyk": "^1.42.3"
+    "snyk": "^1.69.7"
   },
   "devDependencies": {
     "nodemon": "^1.10.2"
