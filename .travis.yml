@@ -4,8 +4,7 @@ language: node_js
 # define node.js versions to run on
 node_js:
   - "stable"
-  - "7"
-  - "6"
+  - "12"
 
 # run before everey other script
 before_script:
