@@ -16,7 +16,7 @@
     "prepublish": "npm run snyk-protect"
   },
   "engines": {
-    "node": "^6.9.0"
+    "node": "^12.16.1"
   },
   "repository": {
     "type": "git",
