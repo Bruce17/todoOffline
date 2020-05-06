@@ -1,3 +1,9 @@
+# 1.1.0 (2020-05-06)
+
+- Update dependencies
+- Upgrade to Node.js v12
+
+
 # 1.0.1 (2017-05-05)
 
 - Add missing windows phone tile logo.
