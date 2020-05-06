@@ -83,7 +83,7 @@ db.once('open', function() {
   });
 
   apiRouter.post('/todos/complete', function(req, res) {
-    Todo.findOneAndUpdate({_id: req.body.id}, {complete: req.body.complete}, function(err, doc) {
+    Todo.findOneAndUpdate({_id: req.body.id}, {complete: req.body.complete}, function(err/*, doc*/) {
       //res.json(req.body);
       res.json(err);
     });

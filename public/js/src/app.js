@@ -1,5 +1,6 @@
 /* global window, jQuery, Offline, Promise, logMessage:false, debugBoolean:false, logInfo:false, logError:false */
 
+// eslint-disable-next-line no-unused-vars
 (function ($, window, undefined) {
   'use strict';
 

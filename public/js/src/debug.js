@@ -1,5 +1,6 @@
 /* global window:false */
 
+// eslint-disable-next-line no-unused-vars
 (function (window, console, undefined) {
   'use strict';
 
